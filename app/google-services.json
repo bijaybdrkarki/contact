@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "4919702553",
+    "firebase_url": "https://contact-5e1e8.firebaseio.com",
+    "project_id": "contact-5e1e8",
+    "storage_bucket": "contact-5e1e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:4919702553:android:f56b69afb5f3f97e",
+        "android_client_info": {
+          "package_name": "com.himalaya.contacts"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "4919702553-7bh9a07equm0a4ttu4jao5hmrhggpc1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBcYDE1kx-9I-IeOZnC8rW8RnmhhNXOtE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
