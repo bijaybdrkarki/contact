@@ -1,5 +1,6 @@
 package com.himalaya.contacts;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +13,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
+
 /**
  * Created by user on 3/22/2018.
  */
@@ -21,18 +27,21 @@ import android.widget.Toast;
 //    get the name and password from edittext, validate and compare with stored name and password
 //    if matched then open next activity else show error message
 public class Loginactivity extends Activity {
-    EditText et_name,et_pass;
-    Button bt_login,bt_signup;
+    EditText et_name, et_pass;
+    Button bt_login, bt_signup;
+    private AdView mAdView;
+
+  //  @SuppressLint("MissingPermission")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 //        set the view
         setContentView(R.layout.activity_login);
 //        intialize view
-        et_name= findViewById(R.id.et_name);
-        et_pass= findViewById(R.id.et_pass);
-        bt_login= findViewById(R.id.bt_login);
-        bt_signup= findViewById(R.id.bt_signup);
+        et_name = findViewById(R.id.et_name);
+        et_pass = findViewById(R.id.et_pass);
+        bt_login = findViewById(R.id.bt_login);
+        bt_signup = findViewById(R.id.bt_signup);
 
 //        button click event
         bt_login.setOnClickListener(new View.OnClickListener() {
@@ -40,54 +49,58 @@ public class Loginactivity extends Activity {
             public void onClick(View view) {
 //                here when bt_login is clicked
                 //   get the name and password from edit text
-                String name= et_name.getText().toString();
-                String password= et_pass.getText().toString();
+                String name = et_name.getText().toString();
+                String password = et_pass.getText().toString();
 //                validate the credentials
-                boolean validate= true;
-                if (TextUtils.isEmpty(name))
-                {
+                boolean validate = true;
+                if (TextUtils.isEmpty(name)) {
                     et_name.setError("user name is empty");
-                    validate= false;
+                    validate = false;
                 }
-                if (TextUtils.isEmpty(password))
-                {
+                if (TextUtils.isEmpty(password)) {
                     et_pass.setError("password is empty");
-                    validate= false;
+                    validate = false;
                 }
 //                compare stored data
-                if(validate)
-                {
+                if (validate) {
 //                    dumy credentail stored
                    /* String dumy_name="ramesh";
                     String dumy_pass="ramesh123";*/
-                   String data[]= getnameAndPasswordfrompref();
-                    if (TextUtils.equals(name,data[0])&& TextUtils.equals(password,data[1]))
+                    String data[] = getnameAndPasswordfrompref();
+                    if (TextUtils.equals(name, data[0]) && TextUtils.equals(password, data[1]))
 //                        open the next page
-                        startActivity(new Intent(Loginactivity.this,ContactlistActivity.class));
+                        startActivity(new Intent(Loginactivity.this, ContactlistActivity.class));
+                } else {
+                    Toast.makeText(Loginactivity.this, "user name or password mismatched", Toast.LENGTH_LONG).show();
                 }
-                else
-                    {
-                        Toast.makeText(Loginactivity.this,"user name or password mismatched",Toast.LENGTH_LONG).show();
-                    }
 
-            };
+            }
+
+            ;
         });
-    bt_signup.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
+        bt_signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 //            here when bt_signup is clicked
-            startActivity(new Intent(Loginactivity.this,SignupActivity.class));
+                startActivity(new Intent(Loginactivity.this, SignupActivity.class));
 
-        };
-    });
+            }
+
+            ;
+        });
+        MobileAds.initialize(this, "ca-app-pub-9711539423493324~7388146769");
+
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
 
     }
-public String[] getnameAndPasswordfrompref()
-{
-    SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-    String name= pref.getString("name","");
-    String password= pref.getString("pass","");
-    String[] data ={name, password};
-    return data;
-}
+
+    public String[] getnameAndPasswordfrompref() {
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        String name = pref.getString("name", "");
+        String password = pref.getString("pass", "");
+        String[] data = {name, password};
+        return data;
+    }
 }
