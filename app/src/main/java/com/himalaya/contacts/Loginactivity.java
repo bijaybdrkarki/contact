@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -16,6 +17,14 @@ import android.widget.Toast;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.mantraideas.simplehttp.datamanager.DataRequestManager;
+import com.mantraideas.simplehttp.datamanager.OnDataRecievedListener;
+import com.mantraideas.simplehttp.datamanager.dmmodel.DataRequest;
+import com.mantraideas.simplehttp.datamanager.dmmodel.DataRequestPair;
+import com.mantraideas.simplehttp.datamanager.dmmodel.Method;
+import com.mantraideas.simplehttp.datamanager.dmmodel.Response;
+
+import org.json.JSONObject;
 
 
 /**
@@ -66,12 +75,14 @@ public class Loginactivity extends Activity {
 //                    dumy credentail stored
                    /* String dumy_name="ramesh";
                     String dumy_pass="ramesh123";*/
-                    String data[] = getnameAndPasswordfrompref();
-                    if (TextUtils.equals(name, data[0]) && TextUtils.equals(password, data[1]))
-//                        open the next page
-                        startActivity(new Intent(Loginactivity.this, ContactlistActivity.class));
-                } else {
-                    Toast.makeText(Loginactivity.this, "user name or password mismatched", Toast.LENGTH_LONG).show();
+//                    String data[] = getnameAndPasswordfrompref();
+                    validateCredentialwithserver(name, password);
+//                    if (TextUtils.equals(name, data[0]) && TextUtils.equals(password, data[1]))
+////                        open the next page
+//                        startActivity(new Intent(Loginactivity.this, ContactlistActivity.class));
+//                } else {
+//                    Toast.makeText(Loginactivity.this, "user name or password mismatched", Toast.LENGTH_LONG).show();
+//                }
                 }
 
             }
@@ -94,6 +105,48 @@ public class Loginactivity extends Activity {
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
 
+    }
+
+    private void validateCredentialwithserver(String name, String password) {
+        DataRequestPair requestPair = DataRequestPair.create();
+        requestPair.put("password", password);
+        requestPair.put("username", name);
+        DataRequest request = DataRequest.getInstance();
+//                .addHeaders(new String[]{"your_header_key"}, new String[]{"your_header_value"});
+        // replace this with your domain to test
+        request.addUrl("http://30.30.0.192:8000/contact/validate/");
+        request.addDataRequestPair(requestPair);
+        request.addMethod(Method.POST);
+        DataRequestManager<String> requestManager = DataRequestManager.getInstance(getApplicationContext(), String.class);
+        requestManager.addRequestBody(request).addOnDataRecieveListner(new OnDataRecievedListener() {
+            @Override
+            public void onDataRecieved(Response response, Object object) {
+                if (response==Response.OK){
+                    Log.d("test", " data from server = " + object.toString());
+                    try {
+                        JSONObject jason=new JSONObject(object.toString());
+                        boolean success=jason.optBoolean( "success");
+                        String message= jason.getString("message");
+                        Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
+                        if (success){
+                           startActivity(new Intent(Loginactivity.this, ContactlistActivity.class));
+                        }else {
+                            Toast.makeText(Loginactivity.this, "login fail", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                    }
+
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(),response.getMessage(),Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        requestManager.sync();
     }
 
     public String[] getnameAndPasswordfrompref() {

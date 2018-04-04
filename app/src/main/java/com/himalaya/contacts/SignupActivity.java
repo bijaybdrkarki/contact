@@ -6,10 +6,21 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.mantraideas.simplehttp.datamanager.DataRequestManager;
+import com.mantraideas.simplehttp.datamanager.OnDataRecievedListener;
+import com.mantraideas.simplehttp.datamanager.OnDataRecievedProgressListener;
+import com.mantraideas.simplehttp.datamanager.dmmodel.DataRequest;
+import com.mantraideas.simplehttp.datamanager.dmmodel.DataRequestPair;
+import com.mantraideas.simplehttp.datamanager.dmmodel.Method;
+import com.mantraideas.simplehttp.datamanager.dmmodel.Response;
+
+import org.json.JSONObject;
 
 /**
  * Created by user on 3/23/2018.
@@ -64,7 +75,9 @@ public class SignupActivity extends Activity {
                 if (validate) {
                     if (TextUtils.equals(password, confirmpass)) {
 //                        save the data in preference
-                        saveUserData(name, password);
+//                        saveUserData(name, password);
+//                        save user data in server
+                        saveuserdataInserver(name, password);
                         Toast.makeText(SignupActivity.this, "user created", Toast.LENGTH_LONG).show();
                         finish();
                     } else {
@@ -75,6 +88,47 @@ public class SignupActivity extends Activity {
                 }
             }
         });
+    }
+
+    private void saveuserdataInserver(String name, String password) {
+        DataRequestPair requestPair = DataRequestPair.create();
+        requestPair.put("password", password);
+        requestPair.put("username", name);
+        DataRequest request = DataRequest.getInstance();
+//                .addHeaders(new String[]{"your_header_key"}, new String[]{"your_header_value"});
+        // replace this with your domain to test
+        request.addUrl("http://30.30.0.192:8000/contact/add/");
+        request.addDataRequestPair(requestPair);
+        request.addMethod(Method.POST);
+        DataRequestManager<String> requestManager = DataRequestManager.getInstance(getApplicationContext(), String.class);
+        requestManager.addRequestBody(request).addOnDataRecieveListner(new OnDataRecievedListener() {
+            @Override
+            public void onDataRecieved(Response response, Object object) {
+                if (response==Response.OK){
+                Log.d("test", " data from server = " + object.toString());
+                try {
+                    JSONObject jason=new JSONObject(object.toString());
+                    boolean success=jason.optBoolean( "success");
+                    String message= jason.getString("message");
+                    Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
+                    if (success){
+                        finish();
+                    }
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+                }
+
+            }
+            else
+                {
+                    Toast.makeText(getApplicationContext(),response.getMessage(),Toast.LENGTH_LONG).show();
+                }
+            }
+                });
+        requestManager.sync();
     }
 
     public void saveUserData(String name, String password) {

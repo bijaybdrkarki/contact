@@ -10,6 +10,11 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.mantraideas.simplehttp.datamanager.DataRequestManager;
 import com.mantraideas.simplehttp.datamanager.OnDataRecievedListener;
 import com.mantraideas.simplehttp.datamanager.OnDataRecievedProgressListener;
@@ -27,6 +32,8 @@ import java.util.List;
 public class ContactlistActivity extends Activity {
     List<Contact> contactList;
     FloatingActionButton fab_add;
+    private DatabaseReference mDatabase;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,6 +41,35 @@ public class ContactlistActivity extends Activity {
         setContentView(R.layout.activity_contactlist);
         setTitle("MyContacts");
         contactList = new ArrayList<>();
+        //private DatabaseReference mDatabase;
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        final ContactAdaptor adaptor = new ContactAdaptor(this, R.layout.row_contact, contactList);
+        ListView all_contact;
+        all_contact = findViewById(R.id.all_contact);
+        all_contact.setAdapter(adaptor);
+
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("ContactlistActivity","database changed");
+                if(contactList. size() > 0)
+                    contactList.clear();
+
+                for(DataSnapshot mSnap : dataSnapshot.getChildren()){
+                    contactList.add(mSnap.getValue(Contact.class));
+                }
+                adaptor.notifyDataSetChanged();
+//                String value = dataSnapshot.getValue(String.class);
+  //              Log.d("Contactlist", "Value is: " + value);
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
   /*  the data here is dummy data
   String dummy_list= "[\n" +
                 "{\n" +
@@ -105,36 +141,33 @@ public class ContactlistActivity extends Activity {
 // the data from here is from server
 //        create the request
 
-        DataRequest request = DataRequest.getInstance();
+//        DataRequest request = DataRequest.getInstance();
+//
+//        // replace this with your domain to test
+//        request.addUrl("https://30.30.0.192:8000/contact/get/");
+//        //request.addDataRequestPair(requestPair);
+//        request.addMethod(Method.GET);
+//        request.addMinimumServerCallTimeDifference(2000);
+//        // execute the request
+//        DataRequestManager<String> requestManager = DataRequestManager.getInstance(getApplicationContext(), String.class);
+//        requestManager.addRequestBody(request).addOnDataRecieveListner(new OnDataRecievedListener() {
+//            @Override
+//            public void onDataRecieved(Response response, Object object) {
+//                if (response == Response.OK) {
+//                    Log.d("test", " data from server = " + object.toString());
+//                } else {
+//                    Toast.makeText(ContactlistActivity.this, "no internet", Toast.LENGTH_LONG).show();
+//                }
+//
+//            }
+//        }, new OnDataRecievedProgressListener() {
+//            @Override
+//            public void onDataRecievedProgress(int completedPercentage) {
+//                Log.d("MainActivity", "Progress = " + completedPercentage);
+//            }
+//        });
+//        requestManager.sync();
 
-        // replace this with your domain to test
-        request.addUrl("https://30.30.0.192:8000/contact/get/");
-        //request.addDataRequestPair(requestPair);
-        request.addMethod(Method.GET);
-        request.addMinimumServerCallTimeDifference(2000);
-        // execute the request
-        DataRequestManager<String> requestManager = DataRequestManager.getInstance(getApplicationContext(), String.class);
-        requestManager.addRequestBody(request).addOnDataRecieveListner(new OnDataRecievedListener() {
-            @Override
-            public void onDataRecieved(Response response, Object object) {
-                if (response == Response.OK) {
-                    Log.d("test", " data from server = " + object.toString());
-                } else {
-                    Toast.makeText(ContactlistActivity.this, "no internet", Toast.LENGTH_LONG).show();
-                }
-
-            }
-        }, new OnDataRecievedProgressListener() {
-            @Override
-            public void onDataRecievedProgress(int completedPercentage) {
-                Log.d("MainActivity", "Progress = " + completedPercentage);
-            }
-        });
-        requestManager.sync();
-        ContactAdaptor adaptor = new ContactAdaptor(this, R.layout.row_contact, contactList);
-        ListView all_contact;
-        all_contact = findViewById(R.id.all_contact);
-        all_contact.setAdapter(adaptor);
         fab_add = findViewById(R.id.fab_add);
         fab_add.setOnClickListener(new View.OnClickListener() {
             @Override

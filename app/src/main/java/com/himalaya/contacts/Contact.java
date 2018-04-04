@@ -1,14 +1,20 @@
 package com.himalaya.contacts;
 
+import com.google.firebase.database.IgnoreExtraProperties;
+
 /**
  * Created by user on 3/24/2018.
  */
-
+@IgnoreExtraProperties
 public class Contact {
     String id;
     String name;
     String phonenumber;
     String email;
+
+    public Contact() {
+
+    }
 
     public String getId() {
         return id;
